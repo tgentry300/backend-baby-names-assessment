@@ -13,6 +13,7 @@
 import sys
 import re
 import argparse
+import os
 
 """
 Define the extract_names() function below and change main()
@@ -38,6 +39,11 @@ Suggested milestones for incremental development:
  -Fix main() to use the extract_names list
 """
 
+def read_file(file):
+    with open(file, 'r') as f:
+        file_text = f.read()
+        return file_text
+
 
 def extract_names(filename):
     """
@@ -45,11 +51,34 @@ def extract_names(filename):
     followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
-    return
+    html_text = read_file(filename)
+    year = re.search(r'Popularity\sin\s((\d\d\d\d))', html_text)
+    year = year.group(1)
+    names = re.findall(r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', html_text)
+
+    # name_list = []
+    male_name_dict = {}
+    female_name_dict = {}
+    for name in names:
+        male_name_dict[name[0]] = name[1]
+        female_name_dict[name[0]] = name[2]
+    
+    names_list = []
+    names_list.append(year)
+    for key, value in male_name_dict.iteritems():
+        names_list.append(value + ' ' + key)
+
+    for key, value in female_name_dict.iteritems():
+        names_list.append(value + ' ' + key)
+
+    return '\n'.join(sorted(names_list)) + '\n'
+
+    # text = '\n'.join(name_list) + '\n'
+    
 
 
 def main():
+    
     # This command-line parsing code is provided.
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -68,7 +97,15 @@ def main():
     # option flag
     create_summary = args.summaryfile
 
-    # +++your code here+++
+    for file in file_list:
+        if create_summary:
+            basename = os.path.basename(file)
+            with open(basename + '.summary', 'w') as summary_file:
+                summary_file.write(extract_names(file))
+            # extract_names(file)
+        else:
+            print extract_names(file)
+    
     # For each filename, get the names, then either print the text output
     # or write it to a summary file
 
